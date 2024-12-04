@@ -4,6 +4,7 @@ import express from "express";
 import mongoose from "mongoose"
 import dotenv from "dotenv";
 import cors from "cors";
+import path, { dirname } from "path";
 
 import bookRoute from "./route/book_route.js"
 import userRoute from "./route/user_route.js"
@@ -33,7 +34,17 @@ console.log("error:",error)
 
 //defining routes
 app.use("/book",bookRoute);
-app.use("/user",userRoute)
+app.use("/user",userRoute);
+
+//deployment
+if(process.env.NODE_ENV==="production"){
+  const dirPath=path.resolve();
+  app.use(express.static("Frontend/dist"));
+  app.get("*",(req,res)=>{
+    res.sendFile(path.resolve(dirPath,"Frontend","dist","index.html"));
+  })
+
+}
 
 
 app.listen(PORT,()=>{

@@ -1,10 +1,14 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import Login from "../../src/components/Login";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-function Login() {
+function SignUp() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const from = location.state?.from?.pathname || "/";
   const {
     register,
     handleSubmit,
@@ -12,44 +16,58 @@ function Login() {
   } = useForm();
   const onSubmit = async (data) => {
     const userInfo = {
+      fullname: data.fullname,
       email: data.email,
       password: data.password,
     };
     await axios
-      .post("http://localhost:4001/user/login", userInfo)
+      .post("/user/signup", userInfo)
       .then((res) => {
         console.log(res.data);
         if (res.data) {
-          toast.success("Login Successfully");
-          document.getElementById("my_modal_3").close();
-          setTimeout(() => {
-            window.location.reload();
-            localStorage.setItem("Users", JSON.stringify(res.data.user));
-          }, 1000);
+          toast.success("SignUp Successfully");
+          navigate(from, { replace: true });
         }
+        localStorage.setItem("Users", JSON.stringify(res.data.user));
       })
       .catch((err) => {
         if (err.response) {
           console.log(err);
           toast.error("Error" + err.response.data.message);
-          setTimeout(() => {}, 1000);
         }
       });
   };
   return (
     <>
-      <dialog id="my_modal_3" className="modal">
-        <div className="modal-box dark:bg-slate-900 dark:text-white">
+      <div className="flex h-screen items-center justify-center">
+        <div id="" className="w-[600px]">
           <form onSubmit={handleSubmit(onSubmit)} method="dialog">
             {/* if there is a button in form, it will close the modal */}
             <Link
               to="/"
-              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 "
-              onClick={() => document.getElementById("my_modal_3").close()}
+              className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
             >
               ✕
             </Link>
-            <h3 className="font-bold text-lg">Login</h3>
+
+            <h3 className="font-bold text-lg">SignUp</h3>
+            {/* {Name} */}
+            <div className="mt-4 space-y-2">
+              <span>Name</span>
+              <br />
+              <input
+                type="text"
+                placeholder="Enter your full name"
+                className="w-80 px-3 border rounded-md outline-none"
+                {...register("fullname", { required: true })}
+              />
+              <br />
+              {errors.fullname && (
+                <span className="text-sm text-red-500">
+                  This field is required
+                </span>
+              )}
+            </div>
 
             {/* {email} */}
             <div className="mt-4 space-y-2">
@@ -86,25 +104,31 @@ function Login() {
               )}
             </div>
             {/* {Button}  */}
-            <div className="flex justify-around mt-6">
+            <div className="flex justify-around mt-4">
               <button className="bg-pink-500 text-white rounded-md px-3 py-1 hover:bg-pink-700 duration-200">
-                Login
+                SignUp
               </button>
-              <p>
-                Not registered?
-                <Link
-                  to="/SignUp"
+              <p
+                className="text-xl
+              "
+              >
+                Have account?
+                <button
                   className="underline text-blue-500 cursor-pointer"
+                  onClick={() =>
+                    document.getElementById("my_modal_3").showModal()
+                  }
                 >
-                  SignUp
-                </Link>
+                  Login
+                </button>
+                <Login />
               </p>
             </div>
           </form>
         </div>
-      </dialog>
+      </div>
     </>
   );
 }
 
-export default Login;
+export default SignUp;
